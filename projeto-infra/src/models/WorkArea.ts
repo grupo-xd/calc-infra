@@ -1,11 +1,17 @@
-import type { PatchCord } from "../interfaces/PatchCord";
+import type { PatchCords } from "../interfaces/PatchCords";
 
 export class WorkArea {
-    private patchCords : PatchCord[];
+    private patchCords : PatchCords[];
     private facePlates : number;
     private tags : number;
 
-    public getPatchCords() : PatchCord[] {
+    constructor(patchCords : PatchCords[], facePlates : number, tags : number) {
+        this.patchCords = patchCords;
+        this.facePlates = facePlates;
+        this.tags = tags;
+    }
+
+    public getPatchCords() : PatchCords[] {
         return this.patchCords;
     }
 
@@ -17,7 +23,7 @@ export class WorkArea {
         return this.tags;
     }
 
-    public setPatchCords(patchCords : PatchCord[]) : void {
+    public setPatchCords(patchCords : PatchCords[]) : void {
         this.patchCords = patchCords;
     }
 

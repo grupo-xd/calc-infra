@@ -1,18 +1,26 @@
-import type { AccessPoints } from "./AccessPoints";
+import type { UTPCableCategory } from "../interfaces/UTPCableCategory";
+import type { AccessPoints } from "../interfaces/AccessPoints";
 
 export class HorizontalMesh {
-    private defaultDistance: number;
-    private cableCategory: UTPCableCategory;
-    private accessPoints: AccessPoints;
-    private femaleRJ45Conectors: number;
+    private defaultDistance : number;
+    private cableCategory : UTPCableCategory;
+    private accessPoints : AccessPoints;
+    private femaleRJ45Conectors : number;
 
-    private static cableCategories = [
-        { name: "Cat5e", speed: 1, maxDistance: 100 },
-        { name: "Cat6", speed: 10, maxDistance: 55 },
-        { name: "Cat6A", speed: 10, maxDistance: 100 },
-        { name: "Cat7", speed: 10, maxDistance: 100 },
-        { name: "Cat8", speed: 40, maxDistance: 30 },
+    private static cableCategories : UTPCableCategory[] = [
+        { type: "Cat5e", maxSpeedGbps: 1, maxDistance: 100 },
+        { type: "Cat6", maxSpeedGbps: 10, maxDistance: 55 },
+        { type: "Cat6A", maxSpeedGbps: 10, maxDistance: 100 },
+        { type: "Cat7", maxSpeedGbps: 10, maxDistance: 100 },
+        { type: "Cat8", maxSpeedGbps: 40, maxDistance: 30 },
     ];
+
+    constructor(defaultDistance : number, cableCategory : UTPCableCategory, accessPoints : AccessPoints, femaleRJ45Conectors : number) {
+        this.defaultDistance = defaultDistance;
+        this.cableCategory = cableCategory;
+        this.accessPoints = accessPoints;
+        this.femaleRJ45Conectors = femaleRJ45Conectors;
+    }
 
     public getDefaultDistance(): number {
         return this.defaultDistance;
@@ -26,6 +34,10 @@ export class HorizontalMesh {
         return this.accessPoints;
     }
 
+    public getFemaleRJ45Conectors() : number {
+        return this.femaleRJ45Conectors;
+    }
+
     public setDefaultDistance(defaultDistance: number): void {
         this.defaultDistance = defaultDistance;
     }
@@ -35,29 +47,30 @@ export class HorizontalMesh {
     }
 
     public setAccessPoints(accessPoints: AccessPoints): void {
-        return this.accessPoints = accessPoints;
+        this.accessPoints = accessPoints;
     }
 
-    public findCategory(maxDistance: number, speed: number): UTPCableCategory {
-        const candidatos = HorizontalMesh.cableCategories.
+    public setFemaleRJ45Conectors(femaleRJ45Conectors : number) : void {
+        this.femaleRJ45Conectors = femaleRJ45Conectors;
+    }
+
+    public static findCategory(maxDistance: number, speed: number): UTPCableCategory {
+        const candidates = HorizontalMesh.cableCategories.
             filter((cable) => {
-                cable.speed >= speed &&
-                    cable.maxDistance >= maxDistance
+                return cable.maxSpeedGbps >= speed && cable.maxDistance >= maxDistance
             })
 
-        if (candidatos.length === 0) {
+        if (candidates.length === 0) {
             throw new Error(
                 `Nenhuma categoria de cabo encontrada para ${maxDistance}m e ${speed}Gpbs`
             );
         }
 
-        return candidatos.reduce((melhor, atual) => {
-            if (atual.maxDistance !== melhor.maxDistance) {
-                atual.maxDistance < melhor.maxDistance ? atual : melhor;
+        return candidates.reduce((best, current) => {
+            if (current.maxDistance !== best.maxDistance) {
+                current.maxDistance < best.maxDistance ? current : best;
             }
-            atual.speed < melhor.speed ? atual : melhor;
+            return current.maxSpeedGbps < best.maxSpeedGbps ? current : best;
         })
     }
-
-
 }
