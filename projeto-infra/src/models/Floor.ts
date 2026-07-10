@@ -1,9 +1,22 @@
+import type { Backbone } from "./Backbone";
+import type { HorizontalMesh } from "./HorizontalMesh";
+import type { SEQ } from "./SEQ";
+import type { SET } from "./SET";
+import type { WorkArea } from "./WorkArea";
+
 export class Floor {
 
-    private equipamentRoom : ;
-    private horizontalMesh : HorizontalMesh;
-    private backbone : Backbone; 
-    private workArea : WorkArea;
+    private equipamentRoom !: SEQ | SET;
+    private horizontalMesh !: HorizontalMesh;
+    private backbone !: Backbone; 
+    private workArea !: WorkArea;
+
+    public constructor(equipamentRoom : SEQ | SET, horizontalMesh : HorizontalMesh, backbone : Backbone, workArea : WorkArea) {
+        this.equipamentRoom = equipamentRoom;
+        this.horizontalMesh = horizontalMesh;
+        this.backbone = backbone;
+        this.workArea = workArea;
+    }
 
     public getHorizontalMesh() : HorizontalMesh {
         return this.horizontalMesh;
@@ -17,6 +30,10 @@ export class Floor {
         return this.workArea;
     }
 
+    public getEquipamentRoom() : SEQ | SET {
+        return this.equipamentRoom;
+    }
+
     public setHorizontalMesh(horizontalMesh : HorizontalMesh) : void {
         this.horizontalMesh = horizontalMesh;
     }
@@ -28,4 +45,8 @@ export class Floor {
     public setWorkArea(workArea : WorkArea) : void {
         this.workArea = workArea;
     } 
+
+    public setEquipamentRoom(equipamentRoom : SEQ | SET) : void {
+        this.equipamentRoom = equipamentRoom;
+    }
 }

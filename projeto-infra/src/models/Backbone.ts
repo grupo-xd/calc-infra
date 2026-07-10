@@ -33,7 +33,7 @@ export class Backbone {
         { type: "OS2 100G ER4", maxSpeedGbps: 100, maxDistance: 40000 },
     ];
 
-    public setCategory(category : FiberCategory) : void {
+    public setCategory(category : "MM" | "SM") : void {
         this.category = category;
     }
 
@@ -41,7 +41,7 @@ export class Backbone {
         return this.category;
     }
 
-    public findCategory(maxDistance:number, speedGpbs:number) : FiberCategory{
+    public static findCategory(maxDistance : number, speedGpbs : number) : FiberCategory{
         const fibras = Backbone.fiberCategories.filter(fiber =>
             fiber.maxDistance >= maxDistance &&
             fiber.maxSpeedGbps >= speedGpbs

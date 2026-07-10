@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { objectInstantiation } from "../services/ObjectInstantiation";
 
 export type InfraForm = {
   numPavimentosBackbone: number;
@@ -36,34 +37,36 @@ export type InfraForm = {
     | "cat7"
     | "cat8";
 
-  quantidadePontos: number;
+  pontosData: number;
+  pontosVoice: number;
+  pontosSecurity: number;
 
-  servicoAtendido: string;
   materialSEQSET: string;
 };
 
 const initialState: InfraForm = {
-  numPavimentosBackbone: 1,
-  paresFibras: 1,
-  medidaBackbone: 1,
+  numPavimentosBackbone: 0,
+  paresFibras: 0,
+  medidaBackbone: 0,
 
   tipoFibra: "MM",
   caracteristicaFibra: "OM3",
 
-  backbonesPorAndar: 1,
+  backbonesPorAndar: 0,
   tipoBackbone: "primario",
 
   acessoriosBackbone: "",
 
-  numPavimentosMH: 1,
-  pontosPorPavimento: 1,
-  medidaMH: 1,
+  numPavimentosMH: 0,
+  pontosPorPavimento: 0,
+  medidaMH: 0,
 
   categoriaCabo: "cat6",
 
-  quantidadePontos: 1,
+  pontosData: 0,
+  pontosVoice: 0,
+  pontosSecurity: 0,
 
-  servicoAtendido: "",
   materialSEQSET: "",
 };
 
@@ -80,12 +83,30 @@ export function useInfraForm() {
     }));
   }
 
-  function validate() : boolean { return false};
+  function validate() : boolean { 
+    if(
+      form.numPavimentosBackbone == 0 ||
+      form.numPavimentosMH == 0 ||
+      form.medidaBackbone == 0 ||
+      form.backbonesPorAndar == 0 ||
+      form.pontosPorPavimento == 0 ||
+      form.medidaMH == 0 ||
+      form.pontosData == 0 ||
+      form.pontosVoice == 0 ||
+      form.pontosSecurity == 0
+    ){
+      return false;
+    }
+
+    return true;
+  };
 
   function submit() : void{
     if (!validate()){
       return;
     }
+
+    objectInstantiation(form);
   };
 
   return {

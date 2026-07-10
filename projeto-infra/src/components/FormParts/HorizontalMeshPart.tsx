@@ -52,19 +52,35 @@ export default function HorizontalMeshPart({form, setField}: InfraFormProps){
             />
 
             <InputWithLabel
-                id="quantidadePontos"
-                label="Quantidade total de pontos de telecomunicações/redes"
+                id="pontosData"
+                label="Pontos de telecomunicações/redes de Dados"
                 type="number"
                 min={1}
                 onChange={(e) =>
-                setField("quantidadePontos", Number(e.target.value))
+                setField("pontosData", Number(e.target.value))
                 }        
             />
 
             <InputWithLabel
-                id="servicoAtendido"
-                label="Serviço atendido pelos pontos"
+                id="pontosVoice"
+                label="Pontos de telecomunicações/redes de Voz"
+                type="number"
+                min={1}
+                onChange={(e) =>
+                setField("pontosVoice", Number(e.target.value))
+                }        
             />
+
+            <InputWithLabel
+                id="pontosSecurity"
+                label="Pontos de telecomunicações/redes de Segurança"
+                type="number"
+                min={1}
+                onChange={(e) =>
+                setField("pontosSecurity", Number(e.target.value))
+                }        
+            />
+
             <InputWithLabel
                 id="materialSEQSET"
                 label="Material para atendimento da SEQ e SET"

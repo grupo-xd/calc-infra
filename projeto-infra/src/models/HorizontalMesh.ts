@@ -5,7 +5,7 @@ export class HorizontalMesh {
     private defaultDistance : number;
     private cableCategory : UTPCableCategory;
     private accessPoints : AccessPoints;
-    private femaleRJ45Conectors : number;
+    private horizontalMeshTag : number;
 
     private static cableCategories : UTPCableCategory[] = [
         { type: "Cat5e", maxSpeedGbps: 1, maxDistance: 100 },
@@ -15,11 +15,11 @@ export class HorizontalMesh {
         { type: "Cat8", maxSpeedGbps: 40, maxDistance: 30 },
     ];
 
-    constructor(defaultDistance : number, cableCategory : UTPCableCategory, accessPoints : AccessPoints, femaleRJ45Conectors : number) {
+    constructor(defaultDistance : number, cableCategory : UTPCableCategory, accessPoints : AccessPoints, horizontalMeshTag : number) {
         this.defaultDistance = defaultDistance;
         this.cableCategory = cableCategory;
         this.accessPoints = accessPoints;
-        this.femaleRJ45Conectors = femaleRJ45Conectors;
+        this.horizontalMeshTag = horizontalMeshTag;
     }
 
     public getDefaultDistance(): number {
@@ -34,8 +34,8 @@ export class HorizontalMesh {
         return this.accessPoints;
     }
 
-    public getFemaleRJ45Conectors() : number {
-        return this.femaleRJ45Conectors;
+    public getHorizontalMeshTag() : number{
+        return this.horizontalMeshTag;
     }
 
     public setDefaultDistance(defaultDistance: number): void {
@@ -50,8 +50,8 @@ export class HorizontalMesh {
         this.accessPoints = accessPoints;
     }
 
-    public setFemaleRJ45Conectors(femaleRJ45Conectors : number) : void {
-        this.femaleRJ45Conectors = femaleRJ45Conectors;
+    public setHorizontalMeshTag(horizontalMeshTag : number) : void{
+        this.horizontalMeshTag = horizontalMeshTag;
     }
 
     public static findCategory(maxDistance: number, speed: number): UTPCableCategory {
