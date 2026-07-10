@@ -148,7 +148,7 @@ export class Calculator {
         equipamentRoom.setFrontCableOrganizer(equipaments);
 
         // Rack
-        let rackHeight = 1.5*(equipaments + (dvrs*2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0));
+        let rackHeight = 1.5*(equipaments + (dvrs*2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0) + (TO ? 0 : equipamentRoom.getDio()));
         if(rackHeight > 16){
             rackHeight -= rackHeight % 4;
         } else {
