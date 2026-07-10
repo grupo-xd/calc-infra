@@ -7,44 +7,42 @@ export class SET{
 
     private patchPanel : number;
     private patchCable : PatchCables[];
-    private dvr : number;
     private rack : Rack;
     private dio : number;
     private to : number;
-    private pigtail : Pigtails[];
+    private pigtail : Pigtails;
     private conectors : Conectors;
     private patchPanelTag : number;
     private patchPanelPortTag : number;
     private patchCableTag : number;
     private powerStrip : number;
     private closeBar : number;
+    private frontCableOrganizer : number;
     private cageNut : number;
     private velcroCableTie : number;
     private plasticCableTie : number;
     private exhauster : number;
 
     constructor(
-        
         patchPanel : number,
         patchCable : PatchCables[],
-        dvr : number,
         rack : Rack,
         dio : number,
         to : number,
-        pigtail : Pigtails[],
+        pigtail : Pigtails,
         conectors : Conectors,
         patchPanelTag : number,
         patchPanelPortTag : number,
         patchCableTag : number,
         powerStrip : number,
         closeBar : number,
+        fronCableOrganizer : number,
         cageNut : number,
         velcroCableTie : number,
         plasticCableTie : number,
         exhauster : number,
     ) {
         this.patchPanel = patchPanel;
-        this.dvr = dvr;
         this.rack = rack;
         this.dio = dio;
         this.to = to;
@@ -56,6 +54,7 @@ export class SET{
         this.patchCableTag = patchCableTag;
         this.powerStrip = powerStrip;
         this.closeBar = closeBar;
+        this.frontCableOrganizer = fronCableOrganizer;
         this.cageNut = cageNut;
         this.velcroCableTie = velcroCableTie;
         this.plasticCableTie = plasticCableTie;
@@ -77,14 +76,6 @@ export class SET{
 
     public setPatchCable(patchCable: PatchCables[]): void {
         this.patchCable = patchCable;
-    }
-
-    public getDvr(): number {
-        return this.dvr;
-    }
-
-    public setDvr(dvr: number): void {
-        this.dvr = dvr;
     }
 
     public getRack(): Rack {
@@ -111,11 +102,11 @@ export class SET{
         this.to = to;
     }
 
-    public getPigtail(): Pigtails[] {
+    public getPigtail(): Pigtails {
         return this.pigtail;
     }
 
-    public setPigtail(pigtail: Pigtails[]): void {
+    public setPigtail(pigtail: Pigtails): void {
         this.pigtail = pigtail;
     }
 
@@ -165,6 +156,14 @@ export class SET{
 
     public setCloseBar(closeBar: number): void {
         this.closeBar = closeBar;
+    }
+
+    public getFrontCableOrganizer(): number {
+        return this.frontCableOrganizer;
+    }
+
+    public setFrontCableOrganizer(frontCableOrganizer: number): void {
+        this.frontCableOrganizer = frontCableOrganizer;
     }
 
     public getCageNut(): number {
