@@ -1,9 +1,15 @@
 import type { InfraForm } from "../../hooks/useInfraForm";
-import type { InfraFormProps } from "../../types/InfraFormProps";
 import InputWithLabel from "../InputWithLabel";
 import SelectWithLabel from "../SelectWithLabel";
 
-export default function BackbonePart({form, setField}: InfraFormProps){
+type BackbonePartProps = {
+  setField: <K extends keyof InfraForm>(
+    field: K,
+    value: InfraForm[K]
+  ) => void;
+};
+
+export default function BackbonePart({setField}: BackbonePartProps){
     return(
         <section>
             <h2>Backbone</h2>

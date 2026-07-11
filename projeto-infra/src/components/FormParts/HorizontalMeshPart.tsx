@@ -1,9 +1,15 @@
 import type { InfraForm } from "../../hooks/useInfraForm";
-import type { InfraFormProps } from "../../types/InfraFormProps";
 import InputWithLabel from "../InputWithLabel";
 import SelectWithLabel from "../SelectWithLabel";
 
-export default function HorizontalMeshPart({form, setField}: InfraFormProps){
+type HorizontalMeshPartProps = {
+  setField: <K extends keyof InfraForm>(
+    field: K,
+    value: InfraForm[K]
+  ) => void;
+};
+
+export default function HorizontalMeshPart({ setField }: HorizontalMeshPartProps) {
     return(
         <section>
             <h2>Malha Horizontal</h2>
@@ -22,7 +28,7 @@ export default function HorizontalMeshPart({form, setField}: InfraFormProps){
                 type="number"
                 min={1}
                 onChange={(e) =>
-                setField("numPavimentosMH", Number(e.target.value))
+                    setField("pontosPorPavimento", Number(e.target.value))
                 }
             />
 
@@ -84,6 +90,9 @@ export default function HorizontalMeshPart({form, setField}: InfraFormProps){
             <InputWithLabel
                 id="materialSEQSET"
                 label="Material para atendimento da SEQ e SET"
+                onChange={(e) =>
+                    setField("materialSEQSET", e.target.value)
+                }
             />
         </section>
     )

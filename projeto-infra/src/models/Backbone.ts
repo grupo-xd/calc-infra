@@ -34,7 +34,12 @@ export class Backbone {
     ];
 
     public setCategory(category : "MM" | "SM") : void {
-        this.category = category;
+        // Mapear MM ou SM para categoria de fibra padrão
+        if (category === "MM") {
+            this.category = { type: "OM3", maxSpeedGbps: 10, maxDistance: 300 };
+        } else {
+            this.category = { type: "OS2", maxSpeedGbps: 10, maxDistance: 10000 };
+        }
     }
 
     public getCategory() : FiberCategory {

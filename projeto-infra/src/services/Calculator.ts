@@ -15,14 +15,37 @@ import type { Rack } from "../interfaces/Rack";
 
 export class Calculator {
 
-    public static calculateTotal() {
-
+    public static calculateTotal(
+        horizontalMeshes: HorizontalMesh[],
+        workAreas: WorkArea[],
+        sets: SET[],
+        seqs: SEQ[],
+        backbones: Backbone[]
+    ) {
+        return {
+            horizontalMeshes,
+            workAreas,
+            sets,
+            seqs,
+            backbones
+        };
     }
 
-    public static calculateBackbone(backbones: Backbone[]) {
-
+    public static calculateBackbone(
+        backbones: Backbone[],
+        paresFibras: number,
+        medidaBackbone: number,
+        backbonesPorAndar: number,
+        numAndares: number
+    ) {
+        const totalPares = paresFibras * backbonesPorAndar * numAndares;
+        return {
+            totalBackbones: backbones.length,
+            totalPares,
+            paresPorAndar: paresFibras * backbonesPorAndar,
+            distanciaTotal: medidaBackbone * numAndares
+        };
     }
-
 
     public static calculateHorizontalMesh(horizontalMesh: HorizontalMesh, workArea: WorkArea, networkPoints: number, cftvPoints: number, voipPoints: number) {
         // Points : HorizontalMesh
@@ -67,7 +90,18 @@ export class Calculator {
         workArea.setTags((networkPoints * 2) + workArea.getFacePlates())
     }
 
-    public static calculateSET(equipamentRoom: SET, networkPoints: number, cftvPoints: number, voipPoints: number, cableCategory: UTPCableCategory, fibers: number, fiberCategory: FiberCategory, useLC : boolean, haveExhauster : Boolean, haveFrontCableOrganizer : boolean) {
+    public static calculateSET(
+        equipamentRoom: SET,
+        networkPoints: number,
+        cftvPoints: number,
+        voipPoints: number,
+        cableCategory: UTPCableCategory,
+        fibers: number,
+        fiberCategory: FiberCategory,
+        useLC: boolean,
+        haveExhauster: Boolean,
+        haveFrontCableOrganizer: boolean
+    ) {
         // PatchPanel
         equipamentRoom.setPatchPanel(Math.ceil(networkPoints / 24))
 
@@ -89,7 +123,7 @@ export class Calculator {
         //Vermelho
         const patchCableR: PatchCables = {
             defaultSize: 2.5,
-            color: "Amarelo",
+            color: "Vermelho",
             cableCategory: cableCategory,
             quantity: (cftvPoints) * 2
         }
@@ -121,14 +155,14 @@ export class Calculator {
         equipamentRoom.setConectors(conectores);
 
         // PatchPanelTag
-        equipamentRoom.setPatchPanelTag(Math.ceil(networkPoints/24));
+        equipamentRoom.setPatchPanelTag(Math.ceil(networkPoints / 24));
 
         // PatchPanelPortTag
-        equipamentRoom.setPatchPanelPortTag((Math.ceil(networkPoints/24))*24)
-        
+        equipamentRoom.setPatchPanelPortTag((Math.ceil(networkPoints / 24)) * 24)
+
         // PatchCableTag
         equipamentRoom.setPatchCableTag(networkPoints * 4);
-    
+
         // VelcroCableTie
         equipamentRoom.setVelcroCableTie(1);
 
@@ -139,34 +173,32 @@ export class Calculator {
         equipamentRoom.setExhauster((haveExhauster ? 1 : 0))
 
         // PowerStrip
-        const equipaments = equipamentRoom.getPatchPanel()*2
-        const dvrs = Math.ceil(cftvPoints/24)
+        const equipaments = equipamentRoom.getPatchPanel() * 2
+        const dvrs = Math.ceil(cftvPoints / 24)
         const powerPorts = (equipaments + dvrs + (haveExhauster ? 1 : 0))
-        equipamentRoom.setPowerStrip((Math.ceil(powerPorts/2))*2);
+        equipamentRoom.setPowerStrip((Math.ceil(powerPorts / 2)) * 2);
 
         // FrontCableOrganizer
-        equipamentRoom.setFrontCableOrganizer(equipaments);
+        equipamentRoom.setFrontCableOrganizer(haveFrontCableOrganizer ? equipaments : 0);
 
         // Rack
-        let rackHeight = 1.5*(equipaments + (dvrs*2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0) + (TO ? 0 : equipamentRoom.getDio()));
-        if(rackHeight > 16){
-            rackHeight -= rackHeight % 4;
+        let rackHeight = 1.5 * (equipaments + (dvrs * 2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0) + (TO ? 0 : equipamentRoom.getDio()));
+        if (rackHeight > 16) {
+            rackHeight = Math.ceil(rackHeight / 4) * 4;
         } else {
-            rackHeight -= rackHeight % 2;
+            rackHeight = Math.ceil(rackHeight / 2) * 2;
         }
-        const Rack : Rack = {
-            size : rackHeight
+        const Rack: Rack = {
+            size: rackHeight
         }
         equipamentRoom.setRack(Rack);
 
         // CageNut
-        equipamentRoom.setCageNut((Math.ceil(rackHeight/10))*10);
+        equipamentRoom.setCageNut((Math.ceil(rackHeight / 10)) * 10);
 
         // CloseBar
-        const usefulRackHeight = (equipaments + (dvrs*2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0));
+        const usefulRackHeight = (equipaments + (dvrs * 2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0));
         equipamentRoom.setCloseBar(rackHeight - usefulRackHeight);
-
-
     }
 
 }
