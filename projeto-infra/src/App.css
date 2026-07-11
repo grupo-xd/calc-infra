@@ -59,12 +59,6 @@ h2 {
   color: var(--signal);
 }
 
-h2::before {
-  content: "// ";
-  color: var(--muted);
-}
-
-/* Ambos os wrappers (Input e Select) caem aqui */
 #root > div {
   display: flex;
   flex-direction: column;

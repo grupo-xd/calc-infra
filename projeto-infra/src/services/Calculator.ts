@@ -15,6 +15,20 @@ import type { Rack } from "../interfaces/Rack";
 
 export class Calculator {
 
+    private static sanitizeQuantity(value: number): number {
+        if (!Number.isFinite(value)) {
+            return 0;
+        }
+        return Math.max(0, Math.round(value));
+    }
+
+    private static sanitizeDistance(value: number): number {
+        if (!Number.isFinite(value)) {
+            return 0;
+        }
+        return Math.max(0, value);
+    }
+
     public static calculateTotal(
         horizontalMeshes: HorizontalMesh[],
         workAreas: WorkArea[],
@@ -38,56 +52,56 @@ export class Calculator {
         backbonesPorAndar: number,
         numAndares: number
     ) {
-        const totalPares = paresFibras * backbonesPorAndar * numAndares;
+        const safePares = this.sanitizeQuantity(paresFibras);
+        const safeBackbonesPorAndar = this.sanitizeQuantity(backbonesPorAndar);
+        const safeNumAndares = this.sanitizeQuantity(numAndares);
+        const safeMedida = this.sanitizeDistance(medidaBackbone);
+        const totalPares = safePares * safeBackbonesPorAndar * safeNumAndares;
         return {
             totalBackbones: backbones.length,
             totalPares,
-            paresPorAndar: paresFibras * backbonesPorAndar,
-            distanciaTotal: medidaBackbone * numAndares
+            paresPorAndar: safePares * safeBackbonesPorAndar,
+            distanciaTotal: safeMedida * safeNumAndares
         };
     }
 
     public static calculateHorizontalMesh(horizontalMesh: HorizontalMesh, workArea: WorkArea, networkPoints: number, cftvPoints: number, voipPoints: number) {
-        // Points : HorizontalMesh
+        const safeNetworkPoints = this.sanitizeQuantity(networkPoints);
+        const safeCftvPoints = this.sanitizeQuantity(cftvPoints);
+        const safeVoipPoints = this.sanitizeQuantity(voipPoints);
+
         const accessPoint: AccessPoints = {
-            data: networkPoints * 2,
-            security: cftvPoints * 2,
-            voice: voipPoints * 2
+            data: safeNetworkPoints * 2,
+            security: safeCftvPoints * 2,
+            voice: safeVoipPoints * 2
         };
         horizontalMesh.setAccessPoints(accessPoint);
 
-        // HorizontalMeshTags : HorizontalMesh
-        horizontalMesh.setHorizontalMeshTag(networkPoints * 4);
+        horizontalMesh.setHorizontalMeshTag(safeNetworkPoints * 4);
 
-        // PatchCords : WorkArea
-        //Azul
         const patchCordsB: PatchCords = {
             defaultSize: 3,
             color: "Azul",
             cableCategory: horizontalMesh.getCableCategory(),
-            quantity: ((networkPoints - cftvPoints) - voipPoints)
-        }
-        //Amarelo
+            quantity: this.sanitizeQuantity(safeNetworkPoints - safeCftvPoints - safeVoipPoints)
+        };
         const patchCordsY: PatchCords = {
             defaultSize: 3,
             color: "Amarelo",
             cableCategory: horizontalMesh.getCableCategory(),
-            quantity: voipPoints
-        }
-        //Branco
+            quantity: this.sanitizeQuantity(safeVoipPoints)
+        };
         const patchCordsW: PatchCords = {
             defaultSize: 1,
             color: "Branco",
             cableCategory: horizontalMesh.getCableCategory(),
-            quantity: cftvPoints
-        }
-        workArea.setPatchCords([patchCordsB, patchCordsY, patchCordsW])
+            quantity: this.sanitizeQuantity(safeCftvPoints)
+        };
+        workArea.setPatchCords([patchCordsB, patchCordsY, patchCordsW]);
 
-        // FacePlates : WorkArea
-        workArea.setFacePlates(networkPoints)
+        workArea.setFacePlates(safeNetworkPoints);
 
-        // Tags : WorkArea
-        workArea.setTags((networkPoints * 2) + workArea.getFacePlates())
+        workArea.setTags(this.sanitizeQuantity((safeNetworkPoints * 2) + workArea.getFacePlates()));
     }
 
     public static calculateSET(
@@ -102,86 +116,75 @@ export class Calculator {
         haveExhauster: Boolean,
         haveFrontCableOrganizer: boolean
     ) {
-        // PatchPanel
-        equipamentRoom.setPatchPanel(Math.ceil(networkPoints / 24))
+        const safeNetworkPoints = this.sanitizeQuantity(networkPoints);
+        const safeCftvPoints = this.sanitizeQuantity(cftvPoints);
+        const safeVoipPoints = this.sanitizeQuantity(voipPoints);
+        const safeFibers = this.sanitizeQuantity(fibers);
+        const patchPanelQty = safeNetworkPoints > 0 ? Math.ceil(safeNetworkPoints / 24) : 0;
 
-        // PatchCable 
-        //Azul
+        equipamentRoom.setPatchPanel(patchPanelQty);
+
         const patchCableB: PatchCables = {
             defaultSize: 2.5,
             color: "Azul",
             cableCategory: cableCategory,
-            quantity: (networkPoints - cftvPoints - voipPoints) * 2
-        }
-        //Amarelo 
+            quantity: this.sanitizeQuantity((safeNetworkPoints - safeCftvPoints - safeVoipPoints) * 2)
+        };
         const patchCableY: PatchCables = {
             defaultSize: 2.5,
             color: "Amarelo",
             cableCategory: cableCategory,
-            quantity: (voipPoints) * 2
-        }
-        //Vermelho
+            quantity: this.sanitizeQuantity(safeVoipPoints * 2)
+        };
         const patchCableR: PatchCables = {
             defaultSize: 2.5,
             color: "Vermelho",
             cableCategory: cableCategory,
-            quantity: (cftvPoints) * 2
-        }
-        equipamentRoom.setPatchCable([patchCableB, patchCableY, patchCableR])
+            quantity: this.sanitizeQuantity(safeCftvPoints * 2)
+        };
+        equipamentRoom.setPatchCable([patchCableB, patchCableY, patchCableR]);
 
-        // DIO & TO
-        if (fibers > 12) {
-            equipamentRoom.setDio(Math.ceil(fibers / 48))
+        if (safeFibers > 12) {
+            equipamentRoom.setDio(Math.ceil(safeFibers / 48));
         } else {
-            equipamentRoom.setTo(1)
+            equipamentRoom.setTo(1);
         }
 
-        // PigTail
-        const TO = fibers <= 12;
+        const TO = safeFibers <= 12;
         const OM1ouOM2 = fiberCategory.type === "OM1" || fiberCategory.type === "OM2";
         const OM3ouOM4 = fiberCategory.type === "OM3" || fiberCategory.type === "OM4";
         const PigTail: Pigtails = {
             size: TO ? 3 : 1,
             color: OM1ouOM2 ? "Laranja" : OM3ouOM4 ? "Azul Claro" : "Amarelo",
-            quantity: fibers
-        }
+            quantity: safeFibers
+        };
         equipamentRoom.setPigtail(PigTail);
 
-        // Conectores
         const conectores: Conectors = {
-            lc: useLC ? (TO ? fibers : fibers * 2) : 0,
-            sc: useLC ? 0 : (TO ? fibers : fibers * 2)
+            lc: useLC ? (TO ? safeFibers : safeFibers * 2) : 0,
+            sc: useLC ? 0 : (TO ? safeFibers : safeFibers * 2)
         };
         equipamentRoom.setConectors(conectores);
 
-        // PatchPanelTag
-        equipamentRoom.setPatchPanelTag(Math.ceil(networkPoints / 24));
+        equipamentRoom.setPatchPanelTag(patchPanelQty);
 
-        // PatchPanelPortTag
-        equipamentRoom.setPatchPanelPortTag((Math.ceil(networkPoints / 24)) * 24)
+        equipamentRoom.setPatchPanelPortTag(patchPanelQty * 24);
 
-        // PatchCableTag
-        equipamentRoom.setPatchCableTag(networkPoints * 4);
+        equipamentRoom.setPatchCableTag(this.sanitizeQuantity(safeNetworkPoints * 4));
 
-        // VelcroCableTie
         equipamentRoom.setVelcroCableTie(1);
 
-        // PlasticCableTie
         equipamentRoom.setPlasticCableTie(1);
 
-        // Exhauster
-        equipamentRoom.setExhauster((haveExhauster ? 1 : 0))
+        equipamentRoom.setExhauster(haveExhauster ? 1 : 0);
 
-        // PowerStrip
-        const equipaments = equipamentRoom.getPatchPanel() * 2
-        const dvrs = Math.ceil(cftvPoints / 24)
-        const powerPorts = (equipaments + dvrs + (haveExhauster ? 1 : 0))
+        const equipaments = equipamentRoom.getPatchPanel() * 2;
+        const dvrs = Math.max(0, Math.ceil(safeCftvPoints / 24));
+        const powerPorts = (equipaments + dvrs + (haveExhauster ? 1 : 0));
         equipamentRoom.setPowerStrip((Math.ceil(powerPorts / 2)) * 2);
 
-        // FrontCableOrganizer
         equipamentRoom.setFrontCableOrganizer(haveFrontCableOrganizer ? equipaments : 0);
 
-        // Rack
         let rackHeight = 1.5 * (equipaments + (dvrs * 2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0) + (TO ? 0 : equipamentRoom.getDio()));
         if (rackHeight > 16) {
             rackHeight = Math.ceil(rackHeight / 4) * 4;
@@ -189,16 +192,14 @@ export class Calculator {
             rackHeight = Math.ceil(rackHeight / 2) * 2;
         }
         const Rack: Rack = {
-            size: rackHeight
-        }
+            size: Math.max(0, rackHeight)
+        };
         equipamentRoom.setRack(Rack);
 
-        // CageNut
-        equipamentRoom.setCageNut((Math.ceil(rackHeight / 10)) * 10);
+        equipamentRoom.setCageNut((Math.ceil(Math.max(0, rackHeight) / 10)) * 10);
 
-        // CloseBar
         const usefulRackHeight = (equipaments + (dvrs * 2) + equipamentRoom.getFrontCableOrganizer() + (haveExhauster ? 2 : 0));
-        equipamentRoom.setCloseBar(rackHeight - usefulRackHeight);
+        equipamentRoom.setCloseBar(Math.max(0, rackHeight - usefulRackHeight));
     }
 
 }

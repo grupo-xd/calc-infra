@@ -32,6 +32,13 @@ export interface ProjectResult {
     };
 }
 
+const sanitizeInput = (value: number): number => {
+    if (!Number.isFinite(value)) {
+        return 0;
+    }
+    return Math.max(0, Math.round(value));
+};
+
 export function objectInstantiation(form: InfraForm): ProjectResult {
     // Configurar categoria de cabo UTP
     const utpCabelCategoryData: UTPCableCategory[] = [
@@ -62,9 +69,9 @@ export function objectInstantiation(form: InfraForm): ProjectResult {
     ) || fiberCategoryData[2];
 
     // Totais por pavimento
-    const totalNetworkPoints = form.pontosData;
-    const totalSecurityPoints = form.pontosSecurity;
-    const totalVoicePoints = form.pontosVoice;
+    const totalNetworkPoints = sanitizeInput(form.pontosData);
+    const totalSecurityPoints = sanitizeInput(form.pontosSecurity);
+    const totalVoicePoints = sanitizeInput(form.pontosVoice);
     const totalPoints = totalNetworkPoints + totalSecurityPoints + totalVoicePoints;
 
     // Access Points
@@ -147,7 +154,7 @@ export function objectInstantiation(form: InfraForm): ProjectResult {
         totalSecurityPoints,
         totalVoicePoints,
         selectedUTPCategory,
-        form.paresFibras,
+        sanitizeInput(form.paresFibras),
         selectedFiberCategory,
         true, // useLC
         true, // haveExhauster
@@ -155,7 +162,7 @@ export function objectInstantiation(form: InfraForm): ProjectResult {
     );
 
     // Criar andares
-    const totalAndares = Math.max(form.numPavimentosBackbone, form.numPavimentosMH);
+    const totalAndares = Math.max(sanitizeInput(form.numPavimentosBackbone), sanitizeInput(form.numPavimentosMH));
     const floors: Floor[] = [];
 
     for (let i = 0; i < totalAndares; i++) {
@@ -167,20 +174,20 @@ export function objectInstantiation(form: InfraForm): ProjectResult {
         totalNetworkPoints,
         totalSecurityPoints,
         totalVoicePoints,
-        totalFibers: form.paresFibras,
+        totalFibers: sanitizeInput(form.paresFibras),
         selectedCableCategory: selectedUTPCategory,
         selectedFiberCategory: selectedFiberCategory,
         backboneInfo: {
-            numAndares: form.numPavimentosBackbone,
-            paresFibras: form.paresFibras,
-            medidaBackbone: form.medidaBackbone,
-            backbonesPorAndar: form.backbonesPorAndar,
+            numAndares: sanitizeInput(form.numPavimentosBackbone),
+            paresFibras: sanitizeInput(form.paresFibras),
+            medidaBackbone: sanitizeInput(form.medidaBackbone),
+            backbonesPorAndar: sanitizeInput(form.backbonesPorAndar),
             tipoFibra: form.tipoFibra,
         },
         horizontalMeshInfo: {
-            numAndares: form.numPavimentosMH,
-            pontosPorPavimento: form.pontosPorPavimento,
-            medidaMH: form.medidaMH,
+            numAndares: sanitizeInput(form.numPavimentosMH),
+            pontosPorPavimento: sanitizeInput(form.pontosPorPavimento),
+            medidaMH: sanitizeInput(form.medidaMH),
         },
     };
 }

@@ -1,6 +1,12 @@
 import * as ExcelJS from 'exceljs';
 import type { ProjectResult } from './ObjectInstantiation';
 
+type SpreadsheetRow = {
+    item: string;
+    quantidade: number | string;
+    unidade: string;
+};
+
 export class SpreadsheetConverter {
     private data: ProjectResult;
 
@@ -8,164 +14,182 @@ export class SpreadsheetConverter {
         this.data = data;
     }
 
+    private formatCableCategory(type: string): string {
+        const normalized = type.toLowerCase();
+        const match = normalized.match(/^cat(\d)(a)?$/);
+        if (match) {
+            return `cat.${match[1]}${match[2] ?? ''}`;
+        }
+        return normalized;
+    }
+
+    private formatColor(color: string): string {
+        return color.toLowerCase();
+    }
+
+    private formatQuantity(value: number | string): number {
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0;
+        }
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
+    }
+
+    private buildRows(rows: SpreadsheetRow[]): SpreadsheetRow[] {
+        return rows
+            .filter((row) => this.formatQuantity(row.quantidade) > 0)
+            .map((row, index) => ({
+                ...row,
+                item: `${index + 1} - ${row.item}`,
+                quantidade: this.formatQuantity(row.quantidade),
+            }));
+    }
+
+    private addSection(worksheet: ExcelJS.Worksheet, title: string, rows: SpreadsheetRow[]) {
+        const sectionTitleRow = worksheet.addRow({ item: title, quantidade: '', unidade: '' });
+        sectionTitleRow.font = { bold: true, size: 12 };
+        worksheet.addRow({ item: '', quantidade: '', unidade: '' });
+
+        this.buildRows(rows).forEach((row) => {
+            worksheet.addRow({
+                item: row.item,
+                quantidade: row.quantidade,
+                unidade: row.unidade,
+            });
+        });
+
+        worksheet.addRow({ item: '', quantidade: '', unidade: '' });
+    }
+
     public async criarPlanilha() {
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Quantificação");
+        const worksheet = workbook.addWorksheet('Quantificação');
 
-        // Configurar colunas
         worksheet.columns = [
-            { header: "Item", key: "item", width: 40 },
-            { header: "Quantidade", key: "quantidade", width: 15 },
-            { header: "Unidade", key: "unidade", width: 15 },
+            { header: 'Item', key: 'item', width: 44 },
+            { header: 'Quantidade', key: 'quantidade', width: 16 },
+            { header: 'Unidade', key: 'unidade', width: 16 },
         ];
 
-        let rowNum = 1;
-
-        // Título
-        worksheet.mergeCells(`A${rowNum}:C${rowNum}`);
-        const titleCell = worksheet.getCell(`A${rowNum}`);
-        titleCell.value = "QUANTIFICAÇÃO DE MATERIAL - INFRAESTRUTURA DE REDE";
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = 'QUANTIFICAÇÃO DE MATERIAL - INFRAESTRUTURA DE REDE';
         titleCell.font = { bold: true, size: 14 };
-        rowNum++;
-        rowNum++;
+        worksheet.mergeCells('A1:C1');
 
-        // Backbone
+        worksheet.addRow([]);
+        const headerRow = worksheet.addRow({ item: 'Item', quantidade: 'Quantidade', unidade: 'Unidade' });
+        headerRow.font = { bold: true };
+        headerRow.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
+        });
+        worksheet.addRow([]);
+
+        const floorCount = Math.max(1, this.data.floors.length);
+        const summaryRows: SpreadsheetRow[] = [
+            { item: 'Andares considerados', quantidade: floorCount, unidade: 'unidades' },
+            { item: 'Pontos de dados', quantidade: this.data.totalNetworkPoints, unidade: 'pontos' },
+            { item: 'Pontos de voz', quantidade: this.data.totalVoicePoints, unidade: 'pontos' },
+            { item: 'Pontos de segurança', quantidade: this.data.totalSecurityPoints, unidade: 'pontos' },
+            { item: 'Total de pontos', quantidade: this.data.totalNetworkPoints + this.data.totalVoicePoints + this.data.totalSecurityPoints, unidade: 'pontos' },
+        ];
+        this.addSection(worksheet, 'Dados da Solução', summaryRows);
+
         if (this.data.backboneInfo.numAndares > 0) {
-            worksheet.getCell(`A${rowNum}`).value = "BACKBONE";
-            worksheet.getCell(`A${rowNum}`).font = { bold: true };
-            rowNum++;
-            
-            worksheet.addRow({ item: "Pares de Fibra Óptica", quantidade: this.data.backboneInfo.paresFibras, unidade: "pares" });
-            worksheet.addRow({ item: "Categoria de Fibra", quantidade: this.data.selectedFiberCategory.type, unidade: "" });
-            worksheet.addRow({ item: "Distância Total", quantidade: this.data.backboneInfo.medidaBackbone * this.data.backboneInfo.numAndares, unidade: "m" });
-            worksheet.addRow({ item: "Backbones por Andar", quantidade: this.data.backboneInfo.backbonesPorAndar, unidade: "un" });
-            rowNum += 4;
-
-            worksheet.addRow({});
-            rowNum++;
+            const backboneRows: SpreadsheetRow[] = [
+                { item: 'Pares de fibra óptica', quantidade: this.data.backboneInfo.paresFibras, unidade: 'pares' },
+                { item: 'Distância total de backbone', quantidade: this.data.backboneInfo.medidaBackbone * this.data.backboneInfo.numAndares, unidade: 'metros' },
+                { item: 'Backbones por andar', quantidade: this.data.backboneInfo.backbonesPorAndar, unidade: 'unidades' },
+                { item: 'Fibra óptica tipo', quantidade: String(this.data.backboneInfo.tipoFibra), unidade: '' },
+                { item: 'Categoria de fibra', quantidade: String(this.data.selectedFiberCategory.type), unidade: '' },
+            ];
+            this.addSection(worksheet, 'Backbone', backboneRows);
         }
 
-        // Malha Horizontal
         if (this.data.horizontalMeshInfo.numAndares > 0) {
-            worksheet.getCell(`A${rowNum}`).value = "MALHA HORIZONTAL";
-            worksheet.getCell(`A${rowNum}`).font = { bold: true };
-            rowNum++;
-            
-            worksheet.addRow({ item: "Categoria de Cabo", quantidade: this.data.selectedCableCategory.type, unidade: "" });
-            worksheet.addRow({ item: "Pontos de Dados", quantidade: this.data.totalNetworkPoints, unidade: "pontos" });
-            worksheet.addRow({ item: "Pontos de Voz", quantidade: this.data.totalVoicePoints, unidade: "pontos" });
-            worksheet.addRow({ item: "Pontos de Segurança", quantidade: this.data.totalSecurityPoints, unidade: "pontos" });
-            rowNum += 4;
-
-            // Patch Cords
-            const workArea = this.data.floors[0]?.getWorkArea();
-            if (workArea && workArea.getPatchCords().length > 0) {
-                worksheet.getCell(`A${rowNum}`).value = "Patch Cords";
-                worksheet.getCell(`A${rowNum}`).font = { bold: true };
-                rowNum++;
-                
-                workArea.getPatchCords().forEach((pc) => {
-                    worksheet.addRow({
-                        item: `Patch Cord ${pc.color}`,
-                        quantidade: pc.quantity,
-                        unidade: "un."
-                    });
-                    rowNum++;
-                });
-
-                worksheet.addRow({ item: "Face Plates", quantidade: workArea.getFacePlates(), unidade: "un." });
-                worksheet.addRow({ item: "Tags", quantidade: workArea.getTags(), unidade: "un." });
-                rowNum += 2;
-
-                worksheet.addRow({});
-                rowNum++;
-            }
+            const cableBoxes = Math.max(1, Math.ceil((this.data.horizontalMeshInfo.medidaMH * Math.max(this.data.totalNetworkPoints + this.data.totalVoicePoints + this.data.totalSecurityPoints, 1)) / 305));
+            const horizontalRows: SpreadsheetRow[] = [
+                { item: `Cabo UTP par trançado ${this.formatCableCategory(String(this.data.selectedCableCategory.type))} (MH)`, quantidade: cableBoxes, unidade: 'caixas' },
+                { item: 'Pontos por pavimento', quantidade: this.data.horizontalMeshInfo.pontosPorPavimento, unidade: 'pontos' },
+                { item: 'Medida base MH', quantidade: this.data.horizontalMeshInfo.medidaMH, unidade: 'metros' },
+                { item: 'Número de pavimentos', quantidade: this.data.horizontalMeshInfo.numAndares, unidade: 'unidades' },
+            ];
+            this.addSection(worksheet, 'Malha Horizontal', horizontalRows);
         }
 
-        // Equipamentos
         if (this.data.floors.length > 0) {
-            const equipRoom = this.data.floors[0].getEquipamentRoom() as any;
-            
-            worksheet.getCell(`A${rowNum}`).value = "EQUIPAMENTOS";
-            worksheet.getCell(`A${rowNum}`).font = { bold: true };
-            rowNum++;
+            const representativeFloor = this.data.floors[0];
+            const workArea = representativeFloor.getWorkArea();
+            const equipRoom = representativeFloor.getEquipamentRoom() as any;
 
-            // Patch Panels
-            worksheet.addRow({ item: "Patch Panels", quantidade: equipRoom.getPatchPanel(), unidade: "un." });
-            worksheet.addRow({ item: "Patch Panel Tags", quantidade: equipRoom.getPatchPanelTag(), unidade: "un." });
-            worksheet.addRow({ item: "Patch Panel Port Tags", quantidade: equipRoom.getPatchPanelPortTag(), unidade: "un." });
-            rowNum += 3;
+            if (workArea.getPatchCords().length > 0) {
+                const patchCordRows: SpreadsheetRow[] = workArea.getPatchCords().map((pc) => ({
+                    item: `Patch Cord ${this.formatColor(pc.color)} - ${pc.defaultSize.toFixed(1).replace(/\.0$/, '')}m`,
+                    quantidade: pc.quantity,
+                    unidade: 'unidades',
+                }));
+                patchCordRows.push({ item: `Tomada RJ45 fêmea ${this.formatCableCategory(String(this.data.selectedCableCategory.type))}`, quantidade: workArea.getFacePlates(), unidade: 'unidades' });
+                patchCordRows.push({ item: 'Etiquetas de identificação', quantidade: workArea.getTags(), unidade: 'unidades' });
+                this.addSection(worksheet, 'Patch Cords', patchCordRows);
+            }
 
-            // Patch Cables
+            const equipmentRows: SpreadsheetRow[] = [
+                { item: 'Patch Panel 24 portas (1U)', quantidade: equipRoom.getPatchPanel(), unidade: 'unidades' },
+                { item: 'Etiquetas para Patch Panel', quantidade: equipRoom.getPatchPanelTag(), unidade: 'unidades' },
+                { item: 'Etiquetas para portas do Patch Panel', quantidade: equipRoom.getPatchPanelPortTag(), unidade: 'unidades' },
+                { item: 'Etiquetas para Patch Cable', quantidade: equipRoom.getPatchCableTag(), unidade: 'unidades' },
+            ];
+            this.addSection(worksheet, 'Equipamentos', equipmentRows);
+
             if (equipRoom.getPatchCable && equipRoom.getPatchCable().length > 0) {
-                worksheet.getCell(`A${rowNum}`).value = "Patch Cables";
-                worksheet.getCell(`A${rowNum}`).font = { bold: true };
-                rowNum++;
-                
-                equipRoom.getPatchCable().forEach((pc: any) => {
-                    worksheet.addRow({
-                        item: `Patch Cable ${pc.color}`,
-                        quantidade: pc.quantity,
-                        unidade: "un."
-                    });
-                    rowNum++;
+                const patchCableRows: SpreadsheetRow[] = equipRoom.getPatchCable().map((pc: any) => ({
+                    item: `Patch Cable ${this.formatCableCategory(pc.cableCategory.type)}, ${this.formatColor(pc.color)} - ${pc.defaultSize.toFixed(1).replace(/\.0$/, '')}m`,
+                    quantidade: pc.quantity,
+                    unidade: 'unidades',
+                }));
+                this.addSection(worksheet, 'Patch Cables', patchCableRows);
+            }
+
+            const fiberRows: SpreadsheetRow[] = [];
+            if (equipRoom.getDio && equipRoom.getDio() > 0) {
+                fiberRows.push({ item: 'DIO para distribuição de fibra', quantidade: equipRoom.getDio(), unidade: 'unidades' });
+            }
+            if (equipRoom.getTo && equipRoom.getTo() > 0) {
+                fiberRows.push({ item: 'Terminal óptico', quantidade: equipRoom.getTo(), unidade: 'unidades' });
+            }
+            if (equipRoom.getPigtail) {
+                fiberRows.push({
+                    item: `Pigtail ${this.formatColor(equipRoom.getPigtail().color)} - ${equipRoom.getPigtail().size}m`,
+                    quantidade: equipRoom.getPigtail().quantity,
+                    unidade: 'unidades',
                 });
-
-                worksheet.addRow({ item: "Patch Cable Tags", quantidade: equipRoom.getPatchCableTag(), unidade: "un." });
-                rowNum += 1;
-
-                worksheet.addRow({});
-                rowNum++;
             }
-
-            // Fibra Óptica
-            if (equipRoom.getDio && equipRoom.getDio() > 0 || (equipRoom.getTo && equipRoom.getTo() > 0)) {
-                worksheet.getCell(`A${rowNum}`).value = "FIBRA ÓPTICA";
-                worksheet.getCell(`A${rowNum}`).font = { bold: true };
-                rowNum++;
-
-                worksheet.addRow({ item: "DIO", quantidade: equipRoom.getDio(), unidade: "un." });
-                worksheet.addRow({ item: "Terminal Óptico", quantidade: equipRoom.getTo(), unidade: "un." });
-                
-                if (equipRoom.getPigtail) {
-                    worksheet.addRow({
-                        item: `Pigtails (${equipRoom.getPigtail().color})`,
-                        quantidade: equipRoom.getPigtail().quantity,
-                        unidade: "un."
-                    });
-                }
-                
-                if (equipRoom.getConectors) {
-                    worksheet.addRow({ item: "Conectores LC", quantidade: equipRoom.getConectors().lc, unidade: "un." });
-                    worksheet.addRow({ item: "Conectores SC", quantidade: equipRoom.getConectors().sc, unidade: "un." });
-                }
-                
-                rowNum += 4;
-                worksheet.addRow({});
-                rowNum++;
+            if (equipRoom.getConectors) {
+                fiberRows.push({ item: 'Conectores LC', quantidade: equipRoom.getConectors().lc, unidade: 'unidades' });
+                fiberRows.push({ item: 'Conectores SC', quantidade: equipRoom.getConectors().sc, unidade: 'unidades' });
             }
-
-            // Infraestrutura de Rack
-            worksheet.getCell(`A${rowNum}`).value = "INFRAESTRUTURA";
-            worksheet.getCell(`A${rowNum}`).font = { bold: true };
-            rowNum++;
+            if (fiberRows.length > 0) {
+                this.addSection(worksheet, 'Fibra Óptica', fiberRows);
+            }
 
             const rackSize = (() => {
                 const rack = equipRoom.getRack();
                 return Array.isArray(rack) ? rack[0]?.size : rack?.size;
-            })();
+            })() ?? 0;
+            const rackQuantity = rackSize > 0 ? Math.max(1, Math.ceil(rackSize / 48)) : 0;
 
-            worksheet.addRow({ item: "Rack", quantidade: rackSize, unidade: "U" });
-            worksheet.addRow({ item: "Cage Nuts", quantidade: equipRoom.getCageNut(), unidade: "un." });
-            worksheet.addRow({ item: "Close Bar", quantidade: equipRoom.getCloseBar(), unidade: "un." });
-            worksheet.addRow({ item: "Power Strip", quantidade: equipRoom.getPowerStrip(), unidade: "un." });
-            worksheet.addRow({ item: "Front Cable Organizer", quantidade: equipRoom.getFrontCableOrganizer(), unidade: "un." });
-            worksheet.addRow({ item: "Velcro Cable Tie", quantidade: equipRoom.getVelcroCableTie(), unidade: "un." });
-            worksheet.addRow({ item: "Plastic Cable Tie", quantidade: equipRoom.getPlasticCableTie(), unidade: "un." });
-            worksheet.addRow({ item: "Exhauster", quantidade: equipRoom.getExhauster(), unidade: "un." });
+            const rackRows: SpreadsheetRow[] = [
+                { item: `Rack 19" x ${rackSize}U`, quantidade: rackQuantity, unidade: 'unidade' },
+                { item: 'Porca Gaiola', quantidade: equipRoom.getCageNut(), unidade: 'unidades' },
+                { item: 'Barra de Fechamento (1U)', quantidade: equipRoom.getCloseBar(), unidade: 'unidades' },
+                { item: 'Régua de tomadas (8 tomadas)', quantidade: equipRoom.getPowerStrip(), unidade: 'unidades' },
+                { item: 'Organizador frontal de cabos (1U)', quantidade: equipRoom.getFrontCableOrganizer(), unidade: 'unidades' },
+                { item: 'Abraçadeiras de Velcro para cabos', quantidade: equipRoom.getVelcroCableTie(), unidade: 'unidades' },
+                { item: 'Abraçadeiras plásticas', quantidade: equipRoom.getPlasticCableTie(), unidade: 'unidades' },
+                { item: 'Exaustor 19"', quantidade: equipRoom.getExhauster(), unidade: 'unidades' },
+            ];
+            this.addSection(worksheet, 'Infraestrutura de Rack', rackRows);
         }
 
-        // Salvar arquivo no navegador
         try {
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -178,7 +202,7 @@ export class SpreadsheetConverter {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error("Erro ao criar arquivo Excel:", error);
+            console.error('Erro ao criar arquivo Excel:', error);
             throw error;
         }
     }

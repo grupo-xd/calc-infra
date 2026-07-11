@@ -90,20 +90,30 @@ export function useInfraForm() {
   function validate(): boolean {
     const { escopo } = form;
 
-    // Validação comum
-    if (form.pontosData == 0 || form.pontosVoice == 0 || form.pontosSecurity == 0) {
+    const isPositiveNumber = (value: number) => Number.isFinite(value) && value > 0;
+
+    if (form.pontosData < 0 || form.pontosVoice < 0 || form.pontosSecurity < 0) {
       return false;
     }
 
-    // Validação específica por escopo
     if (escopo === "backbone" || escopo === "ambos") {
-      if (form.numPavimentosBackbone == 0 || form.paresFibras == 0 || form.medidaBackbone == 0 || form.backbonesPorAndar == 0) {
+      if (
+        !isPositiveNumber(form.numPavimentosBackbone) ||
+        !isPositiveNumber(form.paresFibras) ||
+        !isPositiveNumber(form.medidaBackbone) ||
+        !isPositiveNumber(form.backbonesPorAndar)
+      ) {
         return false;
       }
     }
 
     if (escopo === "horizontalMesh" || escopo === "ambos") {
-      if (form.numPavimentosMH == 0 || form.pontosPorPavimento == 0 || form.medidaMH == 0) {
+      if (
+        !isPositiveNumber(form.numPavimentosMH) ||
+        !isPositiveNumber(form.pontosPorPavimento) ||
+        !isPositiveNumber(form.medidaMH) ||
+        (!isPositiveNumber(form.pontosData) && !isPositiveNumber(form.pontosVoice) && !isPositiveNumber(form.pontosSecurity))
+      ) {
         return false;
       }
     }
