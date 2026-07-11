@@ -1,75 +1,22 @@
-# React + TypeScript + Vite
+Esta atividade envolve a construção de um aplicativo que automatiza o processo de geração da planilha de quantificação de material de infraestrutura de rede local (rede metálica MH e backbone óptico) - cabeamento estruturado.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dados de entrada para cálculo da "Planilha Resultado":
 
-Currently, two official plugins are available:
+Backbone
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Número de pavimentos da edificação / Número de pares de fibras que ficarão disponíveis;
+Medida básica para cálculo dos lances de cabo backbone;
+Especificação do cabo de fibra óptica (MM ou SM);
+Característica da fibra óptica;
+Quantidade de backbones por andar:
+Verificação da existência de backbone primário e/ou secundário.
+Especificação de todos elementos acessórios a interligação de um BB ponto a ponto.
+Malha Horizontal
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+Número de pavimentos da edificação / Número de pontos por pavimento;
+Realização do cálculo cálculo por pavimento com totalização geral ao final;
+Medida básica para cálculo da distância da MH;
+Especificação de categoria do cabo de MH;
+Quantidade de pontos de telecom/redes total, destacando o atendimento do serviço que será atendido;
+Definição do material que atende à SEQ e SET.
+Obs: O cálculo pode ser gerado para solução conjunta (backbone + MH) ou separadamente, conforme a demanda do cliente.

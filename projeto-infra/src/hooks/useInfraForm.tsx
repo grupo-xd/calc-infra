@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { objectInstantiation } from "../services/ObjectInstantiation";
+import { objectInstantiation, type ProjectResult } from "../services/ObjectInstantiation";
 
 export type InfraForm = {
+  escopo: "backbone" | "horizontalMesh" | "ambos";
+
   numPavimentosBackbone: number;
   paresFibras: number;
   medidaBackbone: number;
@@ -45,6 +47,8 @@ export type InfraForm = {
 };
 
 const initialState: InfraForm = {
+  escopo: "ambos",
+
   numPavimentosBackbone: 0,
   paresFibras: 0,
   medidaBackbone: 0,
@@ -83,31 +87,37 @@ export function useInfraForm() {
     }));
   }
 
-  function validate() : boolean { 
-    if(
-      form.numPavimentosBackbone == 0 ||
-      form.numPavimentosMH == 0 ||
-      form.medidaBackbone == 0 ||
-      form.backbonesPorAndar == 0 ||
-      form.pontosPorPavimento == 0 ||
-      form.medidaMH == 0 ||
-      form.pontosData == 0 ||
-      form.pontosVoice == 0 ||
-      form.pontosSecurity == 0
-    ){
+  function validate(): boolean {
+    const { escopo } = form;
+
+    // Validação comum
+    if (form.pontosData == 0 || form.pontosVoice == 0 || form.pontosSecurity == 0) {
       return false;
     }
 
-    return true;
-  };
-
-  function submit() : void{
-    if (!validate()){
-      return;
+    // Validação específica por escopo
+    if (escopo === "backbone" || escopo === "ambos") {
+      if (form.numPavimentosBackbone == 0 || form.paresFibras == 0 || form.medidaBackbone == 0 || form.backbonesPorAndar == 0) {
+        return false;
+      }
     }
 
-    objectInstantiation(form);
-  };
+    if (escopo === "horizontalMesh" || escopo === "ambos") {
+      if (form.numPavimentosMH == 0 || form.pontosPorPavimento == 0 || form.medidaMH == 0) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function submit(): ProjectResult | null {
+    if (!validate()) {
+      return null;
+    }
+
+    return objectInstantiation(form);
+  }
 
   return {
     form,
