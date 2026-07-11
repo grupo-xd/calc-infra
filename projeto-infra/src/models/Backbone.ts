@@ -33,7 +33,7 @@ export class Backbone {
         { type: "OS2 100G ER4", maxSpeedGbps: 100, maxDistance: 40000 },
     ];
 
-    public setCategory(category : "MM" | "SM") : void {
+    public setCategory(category : FiberCategory) : void {
         this.category = category;
     }
 

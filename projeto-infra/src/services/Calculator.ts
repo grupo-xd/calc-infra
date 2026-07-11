@@ -1,6 +1,5 @@
 import type { Backbone } from "../models/Backbone";
 import type { HorizontalMesh } from "../models/HorizontalMesh";
-import type { SEQ } from "../models/SEQ";
 import type { SET } from "../models/SET";
 import type { WorkArea } from "../models/WorkArea";
 

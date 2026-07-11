@@ -5,25 +5,27 @@ import type { Rack } from "../interfaces/Rack";
 
 export class SET{
 
-    private patchPanel : number;
-    private patchCable : PatchCables[];
-    private rack : Rack;
-    private dio : number;
-    private to : number;
-    private pigtail : Pigtails;
-    private conectors : Conectors;
-    private patchPanelTag : number;
-    private patchPanelPortTag : number;
-    private patchCableTag : number;
-    private powerStrip : number;
-    private closeBar : number;
-    private frontCableOrganizer : number;
-    private cageNut : number;
-    private velcroCableTie : number;
-    private plasticCableTie : number;
-    private exhauster : number;
+    private patchPanel !: number;
+    private patchCable !: PatchCables[];
+    private rack !: Rack;
+    private dio !: number;
+    private to !: number;
+    private pigtail !: Pigtails;
+    private conectors !: Conectors;
+    private patchPanelTag !: number;
+    private patchPanelPortTag !: number;
+    private patchCableTag !: number;
+    private powerStrip !: number;
+    private closeBar !: number;
+    private frontCableOrganizer !: number;
+    private cageNut !: number;
+    private velcroCableTie !: number;
+    private plasticCableTie !: number;
+    private exhauster !: number;
 
-    constructor(
+    constructor() {}
+
+    /*constructor(
         patchPanel : number,
         patchCable : PatchCables[],
         rack : Rack,
@@ -59,7 +61,7 @@ export class SET{
         this.velcroCableTie = velcroCableTie;
         this.plasticCableTie = plasticCableTie;
         this.exhauster = exhauster;
-    }
+    }*/
 
     
     public getPatchPanel(): number {

@@ -7,6 +7,8 @@ import { Backbone } from "../models/Backbone";
 import { HorizontalMesh } from "../models/HorizontalMesh";
 import { WorkArea } from "../models/WorkArea";
 import { Floor } from "../models/Floor";
+import { SEQ } from "../models/SEQ";
+import { SET } from "../models/SET";
 
 export function objectInstantiation(
     form : InfraForm
@@ -38,7 +40,7 @@ export function objectInstantiation(
     const workArea = new WorkArea(patchCords, totalPoints / 2, totalPoints * 1.5);
     
     const backbone = new Backbone();
-    backbone.setCategory(form.tipoFibra);
+    //backbone.setCategory(form.tipoFibra);
 
     const floor : Floor[] = [];
 
